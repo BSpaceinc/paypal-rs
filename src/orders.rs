@@ -285,8 +285,8 @@ impl Default for ItemCategoryType {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ShippingDetail {
     /// The name of the person to whom to ship the items. Supports only the full_name property. 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub name: Option<String>,
     /// The address of the person to whom to ship the items. 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub address: Option<Address>,
@@ -352,7 +352,8 @@ pub struct AuthorizationWithData {
     /// The status for the authorized payment.
     pub status: AuthorizationStatus,
     /// The details of the authorized order pending status.
-    pub status_details: AuthorizationStatusDetails,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_details: Option<AuthorizationStatusDetails>,
 }
 
 /// The capture status.
@@ -409,7 +410,7 @@ pub struct Capture {
     /// The status of the captured payment.
     pub status: CaptureStatus,
     /// The details of the captured payment status.
-    pub status_details: CaptureStatusDetails,
+    pub status_details: Option<CaptureStatusDetails>,
 }
 
 /// The status of the refund
@@ -438,17 +439,21 @@ pub struct Refund {
     /// The status of the refund.
     pub status: RefundStatus,
     /// The details of the refund status.
-    pub status_details: RefundStatusDetails,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_details: Option<RefundStatusDetails>,
 }
 
 /// The comprehensive history of payments for the purchase unit.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PaymentCollection {
     /// An array of authorized payments for a purchase unit. A purchase unit can have zero or more authorized payments.
+    #[serde(default)]
     pub authorizations: Vec<AuthorizationWithData>,
     /// An array of captured payments for a purchase unit. A purchase unit can have zero or more captured payments.
+    #[serde(default)]
     pub captures: Vec<Capture>,
     /// An array of refunds for a purchase unit. A purchase unit can have zero or more refunds.
+    #[serde(default)]
     pub refunds: Vec<Refund>,
 }
 
@@ -827,7 +832,7 @@ impl super::Client {
                 header_params,
             )
         };
-        let res = builder.json(&order).send().await?;
+        let res = builder.await.json(&order).send().await?;
 
         if res.status().is_success() {
             let order = res.json::<Order>().await?;
@@ -854,8 +859,7 @@ impl super::Client {
             },
             header_params,
         );
-
-        let res = builder.send().await?;
+        let res = builder.await.send().await?;
 
         if res.status().is_success() {
             let order = res.json::<Order>().await?;
@@ -942,7 +946,7 @@ impl super::Client {
             )
         };
 
-        let res = builder.body(final_json.clone()).send().await?;
+        let res = builder.await.body(final_json.clone()).send().await?;
 
         if res.status().is_success() {
             Ok(())
