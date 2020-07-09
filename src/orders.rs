@@ -405,13 +405,16 @@ pub enum CaptureStatusDetails {
 }
 
 /// A captured payment.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Capture {
-    pub capture_id: String,
+    /// The PayPal-generated ID for the capture.
+    pub id: String,
     /// The status of the captured payment.
     pub status: CaptureStatus,
     /// The details of the captured payment status.
     pub status_details: Option<CaptureStatusDetails>,
+    /// The total captured amount with an optional breakdown that provides details, such as the total item amount,
+    pub amount: Amount,
 }
 
 /// The status of the refund
