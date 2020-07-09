@@ -24,6 +24,7 @@ use reqwest::header;
 use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
+use futures::lock::Mutex;
 
 /// The paypal api endpoint used on a live application.
 pub const LIVE_ENDPOINT: &str = "https://api.paypal.com";
@@ -70,7 +71,7 @@ pub struct Client {
     /// Whether you are or not in a sandbox enviroment.
     pub sandbox: bool,
     /// Api Auth information
-    pub auth: Auth,
+    pub auth: Mutex<Auth>,
 }
 
 /// Represents the query used in most GET api requests.
@@ -185,12 +186,12 @@ impl Client {
         Client {
             client: reqwest::Client::new(),
             sandbox,
-            auth: Auth {
+            auth: Mutex::new(Auth {
                 client_id: client_id.into(),
                 secret: secret.into(),
                 access_token: None,
                 expires: None,
-            },
+            }),
         }
     }
 
@@ -203,12 +204,12 @@ impl Client {
     }
 
     /// Sets up the request headers as required on https://developer.paypal.com/docs/api/reference/api-requests/#http-request-headers
-    fn setup_headers(&self, builder: reqwest::RequestBuilder, header_params: HeaderParams) -> reqwest::RequestBuilder {
+    async fn setup_headers(&self, builder: reqwest::RequestBuilder, header_params: HeaderParams) -> reqwest::RequestBuilder {
         let mut headers = HeaderMap::new();
-
+        let auth = self.auth.lock().await;
         headers.append(header::ACCEPT, "application/json".parse().unwrap());
 
-        if let Some(token) = &self.auth.access_token {
+        if let Some(token) = &auth.access_token {
             headers.append(
                 header::AUTHORIZATION,
                 format!("Bearer {}", token.access_token).as_str().parse().unwrap(),
@@ -217,14 +218,14 @@ impl Client {
 
         if let Some(merchant_payer_id) = header_params.merchant_payer_id {
             let claims = AuthAssertionClaims {
-                iss: self.auth.client_id.clone(),
+                iss: auth.client_id.clone(),
                 payer_id: merchant_payer_id,
             };
             let jwt_header = jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256);
             let token = jsonwebtoken::encode(
                 &jwt_header,
                 &claims,
-                &jsonwebtoken::EncodingKey::from_secret(self.auth.secret.as_ref()),
+                &jsonwebtoken::EncodingKey::from_secret(auth.secret.as_ref()),
             )
             .unwrap();
             let encoded_token = base64::encode(token);
@@ -264,11 +265,12 @@ impl Client {
     }
 
     /// Gets a access token used in all the api calls.
-    pub async fn get_access_token(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn get_access_token(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut auth = self.auth.lock().await;
         let res = self
             .client
             .post(format!("{}/v1/oauth2/token", self.endpoint()).as_str())
-            .basic_auth(self.auth.client_id.as_str(), Some(self.auth.secret.as_str()))
+            .basic_auth(auth.client_id.as_str(), Some(auth.secret.as_str()))
             .header("Content-Type", "x-www-form-urlencoded")
             .header("Accept", "application/json")
             .body("grant_type=client_credentials")
@@ -277,8 +279,8 @@ impl Client {
 
         if res.status().is_success() {
             let token = res.json::<AccessToken>().await?;
-            self.auth.expires = Some((Instant::now(), Duration::new(token.expires_in, 0)));
-            self.auth.access_token = Some(token);
+            auth.expires = Some((Instant::now(), Duration::new(token.expires_in, 0)));
+            auth.access_token = Some(token);
             Ok(())
         } else {
             Err(Box::new(res.json::<errors::ApiResponseError>().await?))
@@ -286,8 +288,9 @@ impl Client {
     }
 
     /// Checks if the access token expired.
-    pub fn access_token_expired(&self) -> bool {
-        if let Some(expires) = self.auth.expires {
+    pub async fn access_token_expired(&self) -> bool {
+        let auth = self.auth.lock().await;
+        if let Some(expires) = &auth.expires {
             expires.0.elapsed() >= expires.1
         } else {
             true
