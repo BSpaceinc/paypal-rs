@@ -8,7 +8,7 @@ use crate::errors;
 use serde::{Deserialize, Serialize};
 
 /// The intent to either capture payment immediately or authorize a payment for an order after order creation.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Intent {
     /// The merchant intends to capture payment immediately after the customer makes a payment.
@@ -30,7 +30,7 @@ impl Default for Intent {
 /// Represents a payer name.
 ///
 /// https://developer.paypal.com/docs/api/orders/v2/#definition-payer.name
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct PayerName {
     /// When the party is a person, the party's given, or first, name.
     pub given_name: String,
@@ -42,7 +42,7 @@ pub struct PayerName {
 /// The phone type.
 ///
 /// https://developer.paypal.com/docs/api/orders/v2/#definition-phone_with_type
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(missing_docs)]
 pub enum PhoneType {
@@ -54,7 +54,7 @@ pub enum PhoneType {
 }
 
 /// The phone number, in its canonical international E.164 numbering plan format.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct PhoneNumber {
     /// The national number, in its canonical international E.164 numbering plan format.
     /// The combined length of the country calling code (CC) and the national number must not be greater than 15 digits.
@@ -64,7 +64,7 @@ pub struct PhoneNumber {
 
 /// The phone number of the customer. Available only when you enable the
 /// Contact Telephone Number option in the Profile & Settings for the merchant's PayPal account.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Phone {
     /// The phone type. 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,7 +74,7 @@ pub struct Phone {
 }
 
 /// The customer's tax ID type. Supported for the PayPal payment method only.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(non_camel_case_types)]
 pub enum TaxIdType {
@@ -85,7 +85,7 @@ pub enum TaxIdType {
 }
 
 /// The tax information of the payer.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaxInfo {
     /// The customer's tax ID. Supported for the PayPal payment method only.
     /// Typically, the tax ID is 11 characters long for individuals and 14 characters long for businesses.
@@ -95,7 +95,7 @@ pub struct TaxInfo {
 }
 
 /// The address of the payer.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Address {
     /// The first line of the address. For example, number or street. For example, 173 Drury Lane.
     /// Required for data entry and compliance and risk checks. Must contain the full address.
@@ -121,7 +121,7 @@ pub struct Address {
 /// The customer who approves and pays for the order. The customer is also known as the payer.
 ///
 /// https://developer.paypal.com/docs/api/orders/v2/#definition-payer
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Payer {
     /// The name of the payer.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -148,7 +148,7 @@ pub struct Payer {
 }
 
 /// Represents money
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Money {
     /// The [three-character ISO-4217 currency code](https://developer.paypal.com/docs/integration/direct/rest/currency-codes/) that identifies the currency.
     pub currency_code: String,
@@ -161,7 +161,7 @@ pub struct Money {
 }
 
 /// Breakdown provides details such as total item amount, total tax amount, shipping, handling, insurance, and discounts, if any.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Breakdown {
     /// The subtotal for all items. Required if the request includes purchase_units[].items[].unit_amount.
     /// Must equal the sum of (items[].unit_amount * items[].quantity) for all items.
@@ -188,7 +188,7 @@ pub struct Breakdown {
 }
 
 /// Represents an amount of money.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Amount {
     /// The [three-character ISO-4217 currency code](https://developer.paypal.com/docs/integration/direct/rest/currency-codes/) that identifies the currency.
     pub currency_code: String,
@@ -215,7 +215,7 @@ impl Amount {
 }
 
 /// The merchant who receives payment for this transaction.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Payee {
     /// The email address of merchant.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -226,7 +226,7 @@ pub struct Payee {
 }
 
 /// Fees, commissions, tips, or donations
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlatformFee {
     /// The fee for this transaction. 
     pub amount: Money,
@@ -236,7 +236,7 @@ pub struct PlatformFee {
 }
 
 /// The funds that are held on behalf of the merchant
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum DisbursementMode {
     /// The funds are released to the merchant immediately.
     Instant,
@@ -253,7 +253,7 @@ impl Default for DisbursementMode {
 }
 
 /// Any additional payment instructions for PayPal Commerce Platform customers. 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PaymentInstruction {
     /// An array of various fees, commissions, tips, or donations.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -264,7 +264,7 @@ pub struct PaymentInstruction {
 }
 
 /// The item category type.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ItemCategoryType {
     /// Goods that are stored, delivered, and used in their electronic format.
@@ -282,7 +282,7 @@ impl Default for ItemCategoryType {
 }
 
 /// The name and address of the person to whom to ship the items.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ShippingDetail {
     /// The name of the person to whom to ship the items. Supports only the full_name property. 
     // #[serde(skip_serializing_if = "Option::is_none")]
@@ -293,7 +293,7 @@ pub struct ShippingDetail {
 }
 
 /// Represents an item.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Item {
     /// The item name or title.
     pub name: String,
@@ -317,7 +317,7 @@ pub struct Item {
 }
 
 /// The status of the payment authorization.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AuthorizationStatus {
     /// The authorized payment is created. No captured payments have been made for this authorized payment.
@@ -339,7 +339,7 @@ pub enum AuthorizationStatus {
 }
 
 /// Details about the status of the authorization.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AuthorizationStatusDetails {
     /// Authorization is pending manual review.
@@ -347,7 +347,7 @@ pub enum AuthorizationStatusDetails {
 }
 
 /// A payment authorization.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct AuthorizationWithData {
     /// The status for the authorized payment.
     pub status: AuthorizationStatus,
@@ -357,7 +357,7 @@ pub struct AuthorizationWithData {
 }
 
 /// The capture status.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CaptureStatus {
     /// The funds for this captured payment were credited to the payee's PayPal account.
@@ -373,7 +373,7 @@ pub enum CaptureStatus {
 }
 
 /// Details about the captured payment status.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CaptureStatusDetails {
     /// The payer initiated a dispute for this captured payment with PayPal.
@@ -405,7 +405,7 @@ pub enum CaptureStatusDetails {
 }
 
 /// A captured payment.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Capture {
     /// The PayPal-generated ID for the capture.
     pub id: String,
@@ -418,7 +418,7 @@ pub struct Capture {
 }
 
 /// The status of the refund
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RefundStatus {
     /// The refund was cancelled.
@@ -430,7 +430,7 @@ pub enum RefundStatus {
 }
 
 /// The reason why the refund has the PENDING or FAILED status.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RefundStatusDetails {
     /// The customer's account is funded through an eCheck, which has not yet cleared.
@@ -438,7 +438,7 @@ pub enum RefundStatusDetails {
 }
 
 /// A refund
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Refund {
     /// The status of the refund.
     pub status: RefundStatus,
@@ -448,7 +448,7 @@ pub struct Refund {
 }
 
 /// The comprehensive history of payments for the purchase unit.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaymentCollection {
     /// An array of authorized payments for a purchase unit. A purchase unit can have zero or more authorized payments.
     #[serde(default)]
@@ -462,7 +462,7 @@ pub struct PaymentCollection {
 }
 
 /// Represents either a full or partial order that the payer intends to purchase from the payee. 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PurchaseUnit {
     /// The API caller-provided external ID for the purchase unit. Required for multiple purchase units when you must update the order through PATCH.
     /// If you omit this value and the order contains only one purchase unit, PayPal sets this value to default.
@@ -528,7 +528,7 @@ impl PurchaseUnit {
 }
 
 /// The type of landing page to show on the PayPal site for customer checkout.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LandingPage {
     /// When the customer clicks PayPal Checkout, the customer is redirected to a page to log in to PayPal and approve the payment.
@@ -549,7 +549,7 @@ impl Default for LandingPage {
 }
 
 /// The shipping preference
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ShippingPreference {
     /// Use the customer-provided shipping address on the PayPal site.
@@ -567,7 +567,7 @@ impl Default for ShippingPreference {
 }
 
 /// Configures a Continue or Pay Now checkout flow.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum UserAction {
     /// After you redirect the customer to the PayPal payment page, a Continue button appears. Use this option when
@@ -587,7 +587,7 @@ impl Default for UserAction {
 }
 
 /// The merchant-preferred payment sources.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PayeePreferred {
     /// Accepts any type of payment from the customer.
@@ -605,7 +605,7 @@ impl Default for PayeePreferred {
 }
 
 /// A payment method.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PaymentMethod {
     /// The customer-selected payment method on the merchant site. 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -616,7 +616,7 @@ pub struct PaymentMethod {
 }
 
 /// Customize the payer experience during the approval process for the payment with PayPal. 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ApplicationContext {
     /// The label that overrides the business name in the PayPal account on the PayPal site.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -647,7 +647,7 @@ pub struct ApplicationContext {
 }
 
 /// A order payload to be used when creating an order.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct OrderPayload {
     /// The intent to either capture payment immediately or authorize a payment for an order after order creation.
     pub intent: Intent,
@@ -674,7 +674,7 @@ impl OrderPayload {
 }
 
 /// The card brand or network.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CardBrand {
     /// Visa card.
@@ -711,7 +711,7 @@ pub enum CardBrand {
     ChinaUnionPay,
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(missing_docs)]
 pub enum CardType {
@@ -722,7 +722,7 @@ pub enum CardType {
 }
 
 /// The payment card to use to fund a payment.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardResponse {
     /// The last digits of the payment card.
     pub last_digits: String,
@@ -734,14 +734,14 @@ pub struct CardResponse {
 }
 
 /// The customer's wallet used to fund the transaction. 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WalletResponse {
     /// Apple Pay Wallet response information. 
     pub apple_pay: CardResponse,
 }
 
 /// The payment source used to fund the payment.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaymentSourceResponse {
     /// The payment card to use to fund a payment. Card can be a credit or debit card
     pub card: CardResponse,
@@ -750,7 +750,7 @@ pub struct PaymentSourceResponse {
 }
 
 /// The status of an order.
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
     /// The order was created with the specified context.
@@ -766,7 +766,7 @@ pub enum OrderStatus {
     Completed,
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(missing_docs)]
 pub enum LinkMethod {
@@ -781,7 +781,7 @@ pub enum LinkMethod {
 }
 
 /// A HTOAES link
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LinkDescription {
     /// The complete target URL.
     pub href: String,
@@ -793,7 +793,7 @@ pub struct LinkDescription {
 }
 
 /// An order represents a payment between two or more parties.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
     /// The date and time when the transaction occurred.
     #[serde(skip_serializing_if = "Option::is_none")]
