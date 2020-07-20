@@ -12,7 +12,7 @@ pub struct ErrorLink {
      /// The link relation type, which serves as an ID for a link that unambiguously describes the semantics of the link.
     pub rel: String,
     /// The HTTP method required to make the related call.
-    pub method: String,
+    pub method: Option<String>,
 }
 
 /// A paypal api response error.
